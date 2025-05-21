@@ -34,7 +34,7 @@ else:
 st.divider()
 st.header("🔍 Revisar y editar horarios por Courier")
 
-courier_id = st.text_input("Introduce el Courier ID para revisar o editar", placeholder="Ej: 198085584")
+courier_id = st.text_input("Introduce el Courier ID para revisar o editar", placeholder="Ej: 198085585")
 
 if courier_id:
     try:
