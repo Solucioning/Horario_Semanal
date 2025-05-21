@@ -1,9 +1,10 @@
+
 import streamlit as st
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Configurar credenciales desde st.secrets (ya es dict)
+# Configurar credenciales desde st.secrets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds_dict = st.secrets["GCP_SERVICE_ACCOUNT"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
@@ -11,8 +12,6 @@ client = gspread.authorize(creds)
 
 # Acceder a la hoja
 sheet = client.open_by_key("1zKh2Gc6zyA2BFZOfbr1G9aWd0n7-V0zVrq9R6eV3ZXI").sheet1
-
-# Cargar datos
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
@@ -38,7 +37,6 @@ if courier_id:
                 sheet.clear()
                 sheet.update([df_final.columns.values.tolist()] + df_final.values.tolist())
                 st.success("Cambios guardados en Google Sheets.")
-
     except ValueError:
         st.error("Courier ID inválido. Debe ser un número.")
 
@@ -69,3 +67,16 @@ with st.form("add_form"):
             st.success("Franja agregada correctamente.")
         except Exception as e:
             st.error(f"Error al agregar franja: {e}")
+
+# Mostrar tabla de couriers con más de 4 franjas
+st.divider()
+st.header("📊 Couriers con más de 4 franjas asignadas")
+
+franjas_count = df["Courier ID"].value_counts()
+df_franjas = franjas_count[franjas_count > 4].reset_index()
+df_franjas.columns = ["Courier ID", "Nº Franjas"]
+
+if not df_franjas.empty:
+    st.dataframe(df_franjas)
+else:
+    st.info("Ningún courier tiene más de 4 franjas actualmente.")
