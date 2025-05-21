@@ -68,15 +68,14 @@ with st.form("add_form"):
         except Exception as e:
             st.error(f"Error al agregar franja: {e}")
 
-# Mostrar tabla de couriers con más de 4 franjas
+# Mostrar tabla de couriers con más de 4 franjas por día
 st.divider()
-st.header("📊 Couriers con más de 4 franjas asignadas")
+st.header("📊 Couriers con más de 4 franjas por día")
 
-franjas_count = df["Courier ID"].value_counts()
-df_franjas = franjas_count[franjas_count > 4].reset_index()
-df_franjas.columns = ["Courier ID", "Nº Franjas"]
+franjas_dia = df.groupby(["Courier ID", "Día"]).size().reset_index(name="Nº Franjas Día")
+df_franjas_dia = franjas_dia[franjas_dia["Nº Franjas Día"] > 4].sort_values(["Courier ID", "Día"])
 
-if not df_franjas.empty:
-    st.dataframe(df_franjas)
+if not df_franjas_dia.empty:
+    st.dataframe(df_franjas_dia)
 else:
-    st.info("Ningún courier tiene más de 4 franjas actualmente.")
+    st.info("Ningún courier tiene más de 4 franjas por día.")
