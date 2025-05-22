@@ -13,45 +13,32 @@ sheet = client.open_by_key("1zKh2Gc6zyA2BFZOfbr1G9aWd0n7-V0zVrq9R6eV3ZXI").sheet
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
-st.title("📋 Consulta de Horarios de Couriers")
+st.title("📋 Consulta de Horarios de Couriers por Ciudad")
 
 # Selección de ciudad
 ciudades = sorted(df["Ciudad"].dropna().unique())
 ciudad_seleccionada = st.selectbox("🌆 Selecciona una ciudad", ciudades)
 
-# Filtro: couriers con más de 4 franjas por día en esa ciudad
-df_filtrado = df[df["Ciudad"] == ciudad_seleccionada]
-franjas_dia = df_filtrado.groupby(["Courier ID", "Día"]).size().reset_index(name="Nº Franjas Día")
-df_franjas_dia = franjas_dia[franjas_dia["Nº Franjas Día"] > 4].sort_values(["Courier ID", "Día"])
+# Filtrar datos por ciudad
+df_ciudad = df[df["Ciudad"] == ciudad_seleccionada]
 
-st.subheader(f"📊 Couriers con más de 4 franjas por día en {ciudad_seleccionada}")
-if not df_franjas_dia.empty:
-    st.dataframe(df_franjas_dia)
+# 1. Couriers con más de 4 franjas en un mismo día
+franjas_dia = df_ciudad.groupby(["Courier ID", "Día"]).size().reset_index(name="Nº Franjas Día")
+df_mas_4_franjas = franjas_dia[franjas_dia["Nº Franjas Día"] > 4].sort_values(["Courier ID", "Día"])
+
+st.subheader("📊 Couriers con más de 4 franjas por día")
+if not df_mas_4_franjas.empty:
+    st.dataframe(df_mas_4_franjas)
 else:
-    st.info("Ningún courier tiene más de 4 franjas por día en esta ciudad.")
+    st.info("No hay couriers con más de 4 franjas en un día para esta ciudad.")
 
-# Consultar un Courier específico y recuento de días trabajados
-st.divider()
-st.header("🔍 Revisar horarios y días trabajados por Courier")
+# 2. Couriers que trabajan más de 6 días diferentes
+dias_por_courier = df_ciudad.groupby("Courier ID")["Día"].nunique().reset_index(name="Días trabajados")
+df_mas_6_dias = dias_por_courier[dias_por_courier["Días trabajados"] > 6].sort_values("Courier ID")
 
-courier_id = st.text_input("Introduce el Courier ID", placeholder="Ej: 198085584")
-
-if courier_id:
-    try:
-        courier_id_int = int(courier_id)
-        df_courier = df[(df["Courier ID"] == courier_id_int) & (df["Ciudad"] == ciudad_seleccionada)]
-
-        if df_courier.empty:
-            st.warning("No se encontraron franjas para este Courier en esa ciudad.")
-        else:
-            dias_trabajados = df_courier["Día"].nunique()
-            st.info(f"🗓 Este courier tiene {dias_trabajados} días diferentes trabajados.")
-
-            if dias_trabajados > 6:
-                st.error("⚠️ Este courier trabaja más de 6 días diferentes.")
-
-            st.subheader("📅 Franjas asignadas:")
-            st.dataframe(df_courier.sort_values(["Día", "Hora Inicio"]))
-    except ValueError:
-        st.error("El Courier ID debe ser un número entero.")
+st.subheader("📅 Couriers que trabajan más de 6 días")
+if not df_mas_6_dias.empty:
+    st.dataframe(df_mas_6_dias)
+else:
+    st.info("No hay couriers que trabajen más de 6 días diferentes en esta ciudad.")
 
