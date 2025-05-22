@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import gspread
@@ -13,6 +14,9 @@ data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
 st.title("📋 Dashboard de Horarios por Ciudad")
+
+# Asegurar formato de fecha correcto
+df["Día"] = pd.to_datetime(df["Día"], errors="coerce").dt.date
 
 # Selección de ciudad
 ciudades = sorted(df["Ciudad"].dropna().unique())
@@ -40,7 +44,7 @@ st.metric("Couriers con +6 días trabajados", num_couriers_mas_6_dias)
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Courier-día con +4 franjas")
+    st.subheader("📊 Días con +4 franjas por courier")
     if not df_mas_4_franjas.empty:
         st.dataframe(df_mas_4_franjas)
     else:
@@ -52,6 +56,7 @@ with col2:
         st.dataframe(df_mas_6_dias)
     else:
         st.info("Ningún courier trabaja más de 6 días.")
+
 
 
 
