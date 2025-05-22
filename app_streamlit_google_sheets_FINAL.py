@@ -30,15 +30,15 @@ franjas_dia = df_ciudad.groupby(["Courier ID", "Día"]).size().reset_index(name=
 df_mas_4_franjas = franjas_dia[franjas_dia["Nº Franjas Día"] > 4].sort_values(["Courier ID", "Día"])
 num_couriers_con_dias_excesivos = df_mas_4_franjas["Courier ID"].nunique()
 
-# 2. Couriers que trabajan más de 6 días distintos
+# 2. Couriers que trabajan 6 o más días distintos
 dias_por_courier = df_ciudad.groupby("Courier ID")["Día"].nunique().reset_index(name="Días trabajados")
-df_mas_6_dias = dias_por_courier[dias_por_courier["Días trabajados"] > 6].sort_values("Courier ID")
+df_mas_6_dias = dias_por_courier[dias_por_courier["Días trabajados"] >= 6].sort_values("Courier ID")
 num_couriers_mas_6_dias = df_mas_6_dias["Courier ID"].nunique()
 
 # Mostrar contadores
 st.markdown(f"### ✅ En **{ciudad_seleccionada}** hay:")
 st.metric("Couriers con +4 franjas en al menos un día", num_couriers_con_dias_excesivos)
-st.metric("Couriers con +6 días trabajados", num_couriers_mas_6_dias)
+st.metric("Couriers con ≥6 días trabajados", num_couriers_mas_6_dias)
 
 # Mostrar en dos columnas los detalles
 col1, col2 = st.columns(2)
@@ -51,11 +51,12 @@ with col1:
         st.info("Ningún courier tiene más de 4 franjas en un día.")
 
 with col2:
-    st.subheader("📅 Couriers con +6 días trabajados")
+    st.subheader("📅 Couriers con ≥6 días trabajados")
     if not df_mas_6_dias.empty:
         st.dataframe(df_mas_6_dias)
     else:
-        st.info("Ningún courier trabaja más de 6 días.")
+        st.info("Ningún courier trabaja 6 días o más.")
+
 
 
 
