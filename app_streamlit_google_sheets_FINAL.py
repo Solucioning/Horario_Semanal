@@ -22,30 +22,30 @@ ciudad_seleccionada = st.selectbox("🌆 Selecciona una ciudad", ciudades)
 # Filtrar por ciudad
 df_ciudad = df[df["Ciudad"] == ciudad_seleccionada]
 
-# 1. Couriers con más de 4 franjas por día
+# 1. Días donde un courier tiene más de 4 franjas
 franjas_dia = df_ciudad.groupby(["Courier ID", "Día"]).size().reset_index(name="Nº Franjas Día")
 df_mas_4_franjas = franjas_dia[franjas_dia["Nº Franjas Día"] > 4].sort_values(["Courier ID", "Día"])
-num_couriers_franjas = df_mas_4_franjas["Courier ID"].nunique()
+num_courier_dias_franjas = len(df_mas_4_franjas)
 
-# 2. Couriers que trabajan más de 6 días diferentes
+# 2. Couriers que trabajan más de 6 días distintos
 dias_por_courier = df_ciudad.groupby("Courier ID")["Día"].nunique().reset_index(name="Días trabajados")
 df_mas_6_dias = dias_por_courier[dias_por_courier["Días trabajados"] > 6].sort_values("Courier ID")
-num_couriers_dias = df_mas_6_dias["Courier ID"].nunique()
+num_couriers_mas_6_dias = len(df_mas_6_dias)
 
 # Mostrar contadores
 st.markdown(f"### ✅ En **{ciudad_seleccionada}** hay:")
-st.metric("Couriers con +4 franjas por día", num_couriers_franjas)
-st.metric("Couriers con +6 días trabajados", num_couriers_dias)
+st.metric("Courier-Día con +4 franjas", num_courier_dias_franjas)
+st.metric("Couriers con +6 días trabajados", num_couriers_mas_6_dias)
 
 # Mostrar en dos columnas los detalles
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("📊 Couriers con +4 franjas por día")
+    st.subheader("📊 Días con +4 franjas por courier")
     if not df_mas_4_franjas.empty:
         st.dataframe(df_mas_4_franjas)
     else:
-        st.info("Ningún courier tiene más de 4 franjas por día.")
+        st.info("Ningún courier tiene más de 4 franjas en un día.")
 
 with col2:
     st.subheader("📅 Couriers con +6 días trabajados")
@@ -53,4 +53,5 @@ with col2:
         st.dataframe(df_mas_6_dias)
     else:
         st.info("Ningún courier trabaja más de 6 días.")
+
 
